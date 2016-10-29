@@ -1,57 +1,39 @@
+// require('StrokeUnit.js')();
+
 var canvas = document.getElementById('myCanvas');
-var ctx = canvas.getContext("2d");
+var strokeManager = new StrokeManager(canvas);
+
 // canvas.addEventListener("mousedown", doMouseDown(evt));
 
 var locationLabel = document.getElementById('cursorLocation');
 var redoButton = document.getElementById('redo');
+var clearButton = document.getElementById('clear');
 
-var isTouching = false;
 var isDrawing = false;
 
-class Point {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-class DrawingAction {
-	constructor(lineWidth, startPoint) {
-    this.lineWidth = lineWidth;
-    this.startPoint = startPoint;
-    this.addNewPoint = function () {
-
-  	}
-  }
-}
-
 var startPoint = new Point(0, 0);
-context_changeColor("#0000FF");
-context_changeLineWidth(10);
+var color = "#0000FF";
+var lineWidth = 10;
 
 canvas.onmousedown = function doMouseDown (evt) {
-	if (!isTouching) {
+	if (!isDrawing) {
 		var currentPoint = getMouseLocationOnCanvas(evt);
 		startPoint = new Point(currentPoint.x, currentPoint.y);
-		isTouching = true;
+		strokeManager.startDrawing(color, lineWidth, startPoint);
+		isDrawing = true;
 	}
 }
 
 canvas.onmousemove = function doMouseMove (evt) {
 	var currentPoint = getMouseLocationOnCanvas(evt);
 	locationLabel.innerText = currentPoint.x + ", " + currentPoint.y;
-	
-	if (isTouching) {
-		if (!isDrawing) {
-        	context_moveTo(startPoint);
-        	isDrawing = true;
-		}
-        context_drawLine(currentPoint);
+	if (isDrawing) {
+		strokeManager.drawPoint(currentPoint);
     }
 }
 
 function doMouseUp() {
-	isTouching = false;
+	strokeManager.endDrawing();
 	isDrawing = false;
 }
 canvas.onmouseup = canvas.onmouseout = doMouseUp;
@@ -61,28 +43,10 @@ function getMouseLocationOnCanvas(evt) {
 	return new Point(evt.clientX - rect.left, evt.clientY - rect.top);
 }
 
-function context_drawLine(toPoint) {
-	ctx.lineTo(toPoint.x, toPoint.y);
-    ctx.stroke();
-}
-
-function context_moveTo(toPoint) {
-	ctx.beginPath();
-	ctx.moveTo(toPoint.x ,toPoint.y);
-}
-
-function context_changeColor(hexColor) {
-	ctx.strokeStyle = hexColor;
-}
-
-function context_changeLineWidth(width) {
-	ctx.lineWidth = width;
-}
-
-function context_finishDrawing() {
-
-}
-
 redoButton.onclick = function redo () {
+	strokeManager.redoDrawing();
+}
 
+clearButton.onclick = function clear() {
+	strokeManager.clearDrawing();
 }
